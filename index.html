@@ -3,167 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MLB Dashboard - Gestão de Anúncios</title>
+    <title>MLB Dashboard Colaborativo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        .input-cell:focus { background-color: white; border-color: #3b82f6; outline: none; }
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 100; justify-content: center; align-items: center; }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900">
+<body class="min-h-screen bg-slate-50">
+
+    <div id="loading" class="loading-overlay"><i class="fas fa-spinner fa-spin fa-2x text-blue-600"></i></div>
 
     <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="bg-blue-600 p-2 rounded-lg text-white">
-                    <i class="fas fa-columns fa-lg"></i>
-                </div>
+                <div class="bg-blue-600 p-2 rounded-lg text-white"><i class="fas fa-database"></i></div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight">MLB Dashboard</h1>
-                    <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Gestão de Anúncios</p>
+                    <h1 class="text-xl font-bold">MLB Dash <span class="text-xs font-normal text-emerald-600 border border-emerald-200 bg-emerald-50 px-2 py-0.5 rounded-full ml-2">Online</span></h1>
                 </div>
             </div>
             <div class="flex items-center gap-4">
-                <button onclick="exportData()" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
-                    <i class="fas fa-download"></i> Exportar JSON
-                </button>
-                <button onclick="addRecord()" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-md transition-all active:scale-95">
-                    <i class="fas fa-plus"></i> Adicionar Registro
+                <button onclick="fetchData()" class="p-2 text-slate-500 hover:text-blue-600"><i class="fas fa-sync"></i> Atualizar</button>
+                <button onclick="addRecord()" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold active:scale-95 transition-all shadow-md hover:bg-blue-700">
+                    <i class="fas fa-plus mr-2"></i> Novo Registro
                 </button>
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
-        <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="relative flex-1 max-w-md">
-                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" oninput="renderTable()" placeholder="Filtrar por MLB..." 
-                       class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm">
-            </div>
-            <div id="stats" class="text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg">
-                Total: 0 registros
-            </div>
-        </div>
-
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50/50 border-b border-slate-200">
-                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">MLB do Anúncio</th>
-                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Alteração</th>
-                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Motivo</th>
-                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Data</th>
-                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Data Revisão</th>
-                            <th class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-100">
-                        </tbody>
-                </table>
-            </div>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase">
+                        <th class="px-6 py-4">MLB</th>
+                        <th class="px-6 py-4">Alteração</th>
+                        <th class="px-6 py-4">Motivo</th>
+                        <th class="px-6 py-4">Data</th>
+                        <th class="px-6 py-4">Data Revisão</th>
+                        <th class="px-6 py-4 text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+            </table>
         </div>
+        <p class="text-center text-slate-400 text-xs mt-6 italic">As alterações são salvas automaticamente na nuvem.</p>
     </main>
 
     <script>
-        // Lógica de Dados com LocalStorage (Salva no navegador)
-        let data = JSON.parse(localStorage.getItem('mlb_data')) || [
-            { id: 1, mlb: 'MLB12345678', alteration: 'Ajuste de preço', reason: 'Preço', date: '2024-03-20', reviewDate: '2024-03-25' }
-        ];
+        // --- COLOQUE A URL DA SUA PLANILHA AQUI ABAIXO ---
+        const API_URL = 'COLE_AQUI_A_URL_DO_APP_SCRIPT'; 
+        // ------------------------------------------------
+        
+        let data = [];
 
-        function saveData() {
-            localStorage.setItem('mlb_data', JSON.stringify(data));
-            document.getElementById('stats').innerText = `Total: ${data.length} registros`;
+        async function fetchData() {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const response = await fetch(API_URL);
+                data = await response.json();
+                renderTable();
+            } catch (e) { alert("Erro ao carregar dados!"); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        async function syncData() {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    body: JSON.stringify(data)
+                });
+                setTimeout(fetchData, 1000); // Recarrega após 1s para garantir sincronia
+            } catch (e) { alert("Erro ao salvar!"); }
+            document.getElementById('loading').style.display = 'none';
         }
 
         function addRecord() {
-            const newRecord = {
-                id: Date.now(),
-                mlb: '',
-                alteration: '',
-                reason: 'Outros',
-                date: new Date().toISOString().split('T')[0],
-                reviewDate: ''
-            };
-            data.unshift(newRecord);
-            saveData();
+            data.unshift({ id: Date.now(), mlb: '', alteration: '', reason: 'Outros', date: '', reviewDate: '' });
             renderTable();
         }
 
-        function deleteRecord(id) {
-            if(confirm('Deseja excluir este registro?')) {
-                data = data.filter(item => item.id !== id);
-                saveData();
-                renderTable();
+        function updateField(id, field, value) {
+            const item = data.find(i => i.id == id);
+            if(item) {
+                item[field] = value;
+                syncData(); // Salva na planilha automaticamente ao mudar
             }
         }
 
-        function updateField(id, field, value) {
-            const item = data.find(i => i.id === id);
-            if(item) {
-                item[field] = value;
-                saveData();
+        function deleteRecord(id) {
+            if(confirm('Excluir este registro?')) {
+                data = data.filter(item => item.id != id);
+                syncData();
             }
         }
 
         function renderTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-
-            const filtered = data.filter(item => item.mlb.toLowerCase().includes(searchTerm));
-
-            filtered.forEach(item => {
+            data.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-blue-50/30 transition-colors';
                 tr.innerHTML = `
-                    <td class="px-4 py-3">
-                        <input type="text" value="${item.mlb}" onchange="updateField(${item.id}, 'mlb', this.value)" placeholder="MLB..." class="w-full px-3 py-2 bg-transparent border border-transparent rounded-lg input-cell text-sm font-mono">
-                    </td>
-                    <td class="px-4 py-3">
-                        <input type="text" value="${item.alteration}" onchange="updateField(${item.id}, 'alteration', this.value)" placeholder="Alteração..." class="w-full px-3 py-2 bg-transparent border border-transparent rounded-lg input-cell text-sm">
-                    </td>
-                    <td class="px-4 py-3">
-                        <select onchange="updateField(${item.id}, 'reason', this.value)" class="w-full px-3 py-2 bg-transparent border border-transparent rounded-lg input-cell text-sm cursor-pointer">
-                            <option ${item.reason === 'Preço' ? 'selected' : ''}>Preço</option>
-                            <option ${item.reason === 'Estoque' ? 'selected' : ''}>Estoque</option>
-                            <option ${item.reason === 'Título' ? 'selected' : ''}>Título</option>
-                            <option ${item.reason === 'Descrição' ? 'selected' : ''}>Descrição</option>
-                            <option ${item.reason === 'Outros' ? 'selected' : ''}>Outros</option>
+                    <td class="px-4 py-2"><input onblur="updateField(${item.id}, 'mlb', this.value)" value="${item.mlb}" class="w-full p-2 bg-transparent focus:bg-white border-transparent focus:border-blue-200 border rounded font-mono"></td>
+                    <td class="px-4 py-2"><input onblur="updateField(${item.id}, 'alteration', this.value)" value="${item.alteration}" class="w-full p-2 bg-transparent focus:bg-white border-transparent focus:border-blue-200 border rounded"></td>
+                    <td class="px-4 py-2">
+                        <select onchange="updateField(${item.id}, 'reason', this.value)" class="w-full p-2 bg-transparent border-transparent border rounded">
+                            <option ${item.reason == 'Preço' ? 'selected' : ''}>Preço</option>
+                            <option ${item.reason == 'Estoque' ? 'selected' : ''}>Estoque</option>
+                            <option ${item.reason == 'Título' ? 'selected' : ''}>Título</option>
+                            <option ${item.reason == 'Descrição' ? 'selected' : ''}>Descrição</option>
+                            <option ${item.reason == 'Outros' ? 'selected' : ''}>Outros</option>
                         </select>
                     </td>
-                    <td class="px-4 py-3">
-                        <input type="date" value="${item.date}" onchange="updateField(${item.id}, 'date', this.value)" class="w-full px-3 py-2 bg-transparent border border-transparent rounded-lg input-cell text-sm">
-                    </td>
-                    <td class="px-4 py-3">
-                        <input type="date" value="${item.reviewDate}" onchange="updateField(${item.id}, 'reviewDate', this.value)" class="w-full px-3 py-2 bg-transparent border border-transparent rounded-lg input-cell text-sm">
-                    </td>
-                    <td class="px-4 py-3 text-center">
-                        <button onclick="deleteRecord(${item.id})" class="text-slate-400 hover:text-red-600 p-2 rounded-lg transition-colors">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
+                    <td class="px-4 py-2"><input type="date" onchange="updateField(${item.id}, 'date', this.value)" value="${item.date}" class="w-full p-2 bg-transparent border-transparent border rounded"></td>
+                    <td class="px-4 py-2"><input type="date" onchange="updateField(${item.id}, 'reviewDate', this.value)" value="${item.reviewDate}" class="w-full p-2 bg-transparent border-transparent border rounded"></td>
+                    <td class="px-4 py-2 text-center text-slate-300 hover:text-red-500 cursor-pointer" onclick="deleteRecord(${item.id})"><i class="fas fa-trash"></i></td>
                 `;
                 tbody.appendChild(tr);
             });
-            document.getElementById('stats').innerText = `Total: ${filtered.length} registros`;
         }
 
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "mlb_dashboard_data.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-        }
-
-        // Inicialização
-        renderTable();
+        fetchData(); // Carrega ao abrir
     </script>
 </body>
 </html>

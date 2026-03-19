@@ -69,19 +69,20 @@
             document.getElementById('loading').style.display = 'none';
         }
 
-        async function syncData() {
-            document.getElementById('loading').style.display = 'flex';
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    body: JSON.stringify(data)
-                });
-                setTimeout(fetchData, 1000); // Recarrega após 1s para garantir sincronia
-            } catch (e) { alert("Erro ao salvar!"); }
-            document.getElementById('loading').style.display = 'none';
-        }
+async function fetchData() {
+    document.getElementById('loading').style.display = 'flex';
+    try {
+        // Adicionamos um timestamp para evitar que o navegador use dados velhos (cache)
+        const response = await fetch(API_URL + '?t=' + Date.now());
+        if (!response.ok) throw new Error('Erro na rede');
+        data = await response.json();
+        renderTable();
+    } catch (e) { 
+        console.log(e);
+        alert("Erro ao carregar dados! Verifique se a URL do App Script está correta e como 'Qualquer pessoa'."); 
+    }
+    document.getElementById('loading').style.display = 'none';
+}
 
         function addRecord() {
             data.unshift({ id: Date.now(), mlb: '', alteration: '', reason: 'Outros', date: '', reviewDate: '' });
